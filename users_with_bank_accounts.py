@@ -1,28 +1,46 @@
 class User:
 
-    def __init__(self, account_type, name = "Unassigned", balance = 0, interest_rate = 1.04):
+    def __init__(self, name = "Unassigned"):
         self.name = name
-        self.account = BankAccount(balance, interest_rate)
-        self.account_type = account_type
+        self.account = {} #BankAccount(balance, interest_rate) goes here originally, moves into create_new_account function
 
-    def make_deposit(self, amount):
-        self.account.deposit(amount)
+    def create_New_Account(self, balance = 0, interest_rate = 1.04, account_type = "checking"):
+        print('we are creating an account here')
+        self.account[account_type] = BankAccount(balance, interest_rate, account_type)
+        return self
+
+    def make_deposit(self, amount, account_type = "checking"):
+        self.account[account_type].deposit(amount)
         print(f"You have deposited ${amount}")
         return self
 
-    def make_withdrawal(self, amount):
-        self.account.withdraw(amount)
+    def make_withdrawal(self, amount, account_type = "checking"):
+        self.account[account_type].withdraw(amount)
         print(f"You have withdrawn ${amount}")
         return self
 
     def display_user_balance(self):
         print(self.name)
-        self.account.display_account_info()
+        for user_account in self.account:
+            self.account[user_account].display_account_info()
         return self
 
     def yield_user_interest(self):
         self.account.yield_of_interest()
         print("You have accrued interest")
+        return self
+
+    def transfer_money(self, other_user, other_user_acc_type, amount, from_account_type):
+        if self.account[from_account_type].balance < amount:
+            print("Insufficient funds")
+            return self
+        print("Transferring $" + str(amount) + " into " + other_user.name + "'s " + other_user_acc_type + " account.")
+        self.account[from_account_type].balance -= amount
+        other_user.account[other_user_acc_type].balance += amount
+
+        self.display_user_balance()
+        other_user.display_user_balance()
+
         return self
 
 class BankAccount:
@@ -31,9 +49,10 @@ class BankAccount:
     accounts = []
     # CLS METHOD
 
-    def __init__(self, balance = 0, interest_rate = 1.04):
+    def __init__(self, balance = 0, interest_rate = 1.04, account_type = "checking"):
         self.balance = balance
         self.interest_rate = interest_rate
+        self.account_type = account_type
         # CLS METHOD
         BankAccount.accounts.append(self)
         # CLS METHOD
@@ -82,8 +101,10 @@ class BankAccount:
 brendan = User("Brendan Cordova")
 tori = User("Tori Cordova")
 
-brendan.make_deposit(50).make_withdrawal(25).yield_user_interest().display_user_balance()
-tori.display_user_balance()
+tori.create_New_Account(1000)
+brendan.create_New_Account(2100).make_deposit(675).make_withdrawal(1000).display_user_balance()
+brendan.create_New_Account(10000, .01, "savings").transfer_money(tori, "checking", 500, "savings")
+brendan.yield_user_interest()
 
 # BankAccount.all_balances()
 # BankAccount.display_all()
